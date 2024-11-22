@@ -1,0 +1,27 @@
+// For format details, see https://aka.ms/devcontainer.json. For config options, see the
+// README at: https://github.com/devcontainers/templates/tree/main/src/python
+{
+	"name": "LeaseMatch",
+	// Or use a Dockerfile or Docker Compose file. More info: https://containers.dev/guide/dockerfile
+	"dockerFile": "Dockerfile", 
+	"customizations": {
+		"vscode": {
+				"extensions": [
+						"dbaeumer.vscode-eslint",
+						"eamodio.gitlens",
+						"esbenp.prettier-vscode",
+						"syler.sass-indented",
+						"stylelint.vscode-stylelint",
+						"rangav.vscode-thunder-client",
+						"mikoz.black-py"
+				],
+				"settings": {
+						"extensions.verifySignature": false,
+						"python.pythonPath": "/usr/local/bin/python3",
+						"python.analysis.extraPaths": [
+								"/usr/local/lib/python3.9/site-packages"
+						]
+				}
+		}
+}
+}
