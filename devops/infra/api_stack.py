@@ -16,17 +16,17 @@ class PropetiesAPIStack(Stack):
 
         properties_lambda_function = aws_lambda.Function(
             self,
-            id="properties",
+            id="lambda_properties_id",
             handler="properties.lambda_handler",
-            code=aws_lambda.Code.from_asset("./api"),
-            timeout=Duration.seconds(2),
+            code=aws_lambda.Code.from_asset("./infra/api"),
+            timeout=Duration.seconds(20),
             runtime=aws_lambda.Runtime.PYTHON_3_12,
         )
 
         global_table = aws_dynamodb.TableV2(
             self,
-            id="LeaseMatch",
-            table_name="LeaseMatch",
+            id="LeaseMatch_table_id",
+            table_name="LeaseMatch_table",
             billing=aws_dynamodb.Billing.on_demand(),
             partition_key=aws_dynamodb.Attribute(
                 name="id", type=aws_dynamodb.AttributeType.STRING
@@ -34,8 +34,9 @@ class PropetiesAPIStack(Stack):
             removal_policy=RemovalPolicy.DESTROY,
         )
 
+        global_table.grant_full_access(properties_lambda_function)
 
-        propierties_api = aws_apigateway.RestApi(self, id="LeaseMatch", rest_api_name="LeaseMatch-Api")
+        propierties_api = aws_apigateway.RestApi(self, id="LeaseMatch_rest_api_id", rest_api_name="LeaseMatch_Api")
 
 
         properties_table = propierties_api.root.add_resource("properties")
