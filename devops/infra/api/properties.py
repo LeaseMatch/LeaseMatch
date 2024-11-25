@@ -4,7 +4,7 @@ import boto3
 def lambda_handler(event, context):
     # Inicializa el cliente de DynamoDB
     dynamodb = boto3.resource('dynamodb')
-    table = dynamodb.Table('LeaseMatch_table')
+    table = dynamodb.Table('LeaseMatch_properties_table')
     
     # Recupera todos los elementos de la tabla
     try:

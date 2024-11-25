@@ -9,3 +9,4 @@ app = cdk.App()
 PropetiesAPIStack(app, "api")
 
 app.synth()
+
