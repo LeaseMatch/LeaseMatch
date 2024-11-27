@@ -6,8 +6,11 @@ from aws_cdk import (
     RemovalPolicy,
     aws_apigateway,
     aws_iam,
+    aws_wafv2,
+    aws_cloudfront,
     # aws_sqs as sqs,
 )
+from aws_cdk.aws_cloudfront_origins import HttpOrigin
 from constructs import Construct
 
 class PropetiesAPIStack(Stack):
@@ -69,7 +72,7 @@ class PropetiesAPIStack(Stack):
         properties_resource.add_method("GET", integration_fn_properties)
         clients_resource.add_method("POST", integration_fn_clients,authorization_type=aws_apigateway.AuthorizationType.NONE)
 
-        properties_resource.add_method(
+        clients_resource.add_method(
             "OPTIONS",
             aws_apigateway.MockIntegration(
                 passthrough_behavior=aws_apigateway.PassthroughBehavior.NEVER,
@@ -96,3 +99,4 @@ class PropetiesAPIStack(Stack):
                 )
             ],
         )
+   
