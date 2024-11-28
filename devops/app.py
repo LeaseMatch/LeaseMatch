@@ -8,6 +8,6 @@ from infra.api_stack import PropetiesAPIStack
 
 app = cdk.App()
 PropetiesAPIStack(app, "api")
-WafStack(app, "waf")
+WafStack(app, "waf", env={"region": "us-east-1"})
 
 app.synth()
