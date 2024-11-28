@@ -4,9 +4,13 @@ from aws_cdk import (
     aws_lambda,
     aws_dynamodb,
     RemovalPolicy,
-    aws_apigateway
+    aws_apigateway,
+    aws_iam,
+    aws_wafv2,
+    aws_cloudfront,
     # aws_sqs as sqs,
 )
+from aws_cdk.aws_cloudfront_origins import HttpOrigin
 from constructs import Construct
 
 class PropetiesAPIStack(Stack):
@@ -23,10 +27,19 @@ class PropetiesAPIStack(Stack):
             runtime=aws_lambda.Runtime.PYTHON_3_12,
         )
 
-        global_table = aws_dynamodb.TableV2(
+        clients_lambda_function = aws_lambda.Function(
             self,
-            id="LeaseMatch_table_id",
-            table_name="LeaseMatch_table",
+            id="lambda_clients_id",
+            handler="clients.lambda_handler",
+            code=aws_lambda.Code.from_asset("./infra/api"),
+            timeout=Duration.seconds(60),
+            runtime=aws_lambda.Runtime.PYTHON_3_12,
+        )
+
+        properties_table = aws_dynamodb.TableV2(
+            self,
+            id="LeaseMatch_properties_table_id",
+            table_name="LeaseMatch_properties_table",
             billing=aws_dynamodb.Billing.on_demand(),
             partition_key=aws_dynamodb.Attribute(
                 name="id", type=aws_dynamodb.AttributeType.STRING
@@ -34,18 +47,32 @@ class PropetiesAPIStack(Stack):
             removal_policy=RemovalPolicy.DESTROY,
         )
 
-        global_table.grant_full_access(properties_lambda_function)
+        clients_table = aws_dynamodb.TableV2(
+            self,
+            id="LeaseMatch_clients_table_id",
+            table_name="LeaseMatch_clients_table",
+            billing=aws_dynamodb.Billing.on_demand(),
+            partition_key=aws_dynamodb.Attribute(
+                name="id", type=aws_dynamodb.AttributeType.STRING
+            ),
+            removal_policy=RemovalPolicy.DESTROY,
+        )
+        # Otorgar permisos a las Lambdas para interactuar con DynamoDB
+        properties_table.grant_read_write_data(properties_lambda_function)
+        clients_table.grant_read_write_data(clients_lambda_function)
 
         propierties_api = aws_apigateway.RestApi(self, id="LeaseMatch_rest_api_id", rest_api_name="LeaseMatch_Api")
 
-
-        properties_table = propierties_api.root.add_resource("properties")
+        properties_resource = propierties_api.root.add_resource("properties")
+        clients_resource = propierties_api.root.add_resource("clients")
 
         integration_fn_properties = aws_apigateway.LambdaIntegration(properties_lambda_function)
+        integration_fn_clients = aws_apigateway.LambdaIntegration(clients_lambda_function)
 
-        properties_table.add_method("GET", integration_fn_properties)
+        properties_resource.add_method("GET", integration_fn_properties)
+        clients_resource.add_method("POST", integration_fn_clients,authorization_type=aws_apigateway.AuthorizationType.NONE)
 
-        properties_table.add_method(
+        clients_resource.add_method(
             "OPTIONS",
             aws_apigateway.MockIntegration(
                 passthrough_behavior=aws_apigateway.PassthroughBehavior.NEVER,
@@ -72,3 +99,4 @@ class PropetiesAPIStack(Stack):
                 )
             ],
         )
+   
