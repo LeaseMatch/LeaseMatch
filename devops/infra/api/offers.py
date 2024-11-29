@@ -3,7 +3,7 @@ import boto3
 from botocore.exceptions import ClientError
 
 # Specify the DynamoDB table name
-TABLE_NAME = 'LeaseMatch_clients_table'
+TABLE_NAME = 'LeaseMatch_offers_table'
 
 def lambda_handler(event, context):
     dynamodb = boto3.resource('dynamodb')
@@ -16,9 +16,9 @@ def lambda_handler(event, context):
     # Handle GET request
     if http_method == 'GET':
         # Extract userId from query parameters
-        user_id = event['queryStringParameters'].get('userId', None)
+        offer_id = event['queryStringParameters'].get('offerId', None)
         
-        if not user_id:
+        if not offer_id:
             return {
                 'statusCode': 400,
                 'body': json.dumps('Error: userId is required for GET request.')
@@ -26,11 +26,11 @@ def lambda_handler(event, context):
         
         # Fetch data from DynamoDB
         try:
-            response = table.get_item(Key={'id': user_id})
+            response = table.get_item(Key={'id': offer_id})
             if 'Item' not in response:
                 return {
                     'statusCode': 404,
-                    'body': json.dumps(f'Error: No user found with id {user_id}')
+                    'body': json.dumps(f'Error: No user found with id {offer_id}')
                 }
 
             user_data = response['Item']
@@ -60,7 +60,7 @@ def lambda_handler(event, context):
                 'body': json.dumps('Error: Request body is required.')
             }
         
-        identity = body.get('id')
+        identity = body.get('offer_id')
         country = body.get('country')
         city = body.get('city')
         type_document = body.get('type')
